@@ -239,7 +239,7 @@ const Home = (props: HomeProps) => {
           const txnEstimate =
             892 +
             (!!collectionPDAAccount && cndy.state.retainAuthority ? 182 : 0) +
-            (cndy.state.tokenMint ? 177 : 0) +
+            // (cndy.state.tokenMint ? 177 : 0) + // Commenting this until I learn how to calculate the new size
             (cndy.state.whitelistMintSettings ? 33 : 0) +
             (cndy.state.whitelistMintSettings?.mode?.burnEveryTime ? 145 : 0) +
             (cndy.state.gatekeeper ? 33 : 0) +

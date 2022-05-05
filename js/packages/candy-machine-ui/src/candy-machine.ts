@@ -495,38 +495,16 @@ export const mintOneToken = async (
   }
 
   if (candyMachine.state.tokenMint) {
-    const transferAuthority = anchor.web3.Keypair.generate();
-
-    signers.push(transferAuthority);
     remainingAccounts.push({
       pubkey: userPayingAccountAddress,
       isWritable: true,
       isSigner: false,
     });
     remainingAccounts.push({
-      pubkey: transferAuthority.publicKey,
+      pubkey: payer,
       isWritable: false,
       isSigner: true,
     });
-
-    instructions.push(
-      Token.createApproveInstruction(
-        TOKEN_PROGRAM_ID,
-        userPayingAccountAddress,
-        transferAuthority.publicKey,
-        payer,
-        [],
-        candyMachine.state.price.toNumber(),
-      ),
-    );
-    cleanupInstructions.push(
-      Token.createRevokeInstruction(
-        TOKEN_PROGRAM_ID,
-        userPayingAccountAddress,
-        payer,
-        [],
-      ),
-    );
   }
   const metadataAddress = await getMetadata(mint.publicKey);
   const masterEdition = await getMasterEdition(mint.publicKey);
@@ -608,8 +586,13 @@ export const mintOneToken = async (
     }
   }
 
-  const instructionsMatrix = [instructions, cleanupInstructions];
-  const signersMatrix = [signers, []];
+  const instructionsMatrix = [instructions];
+  const signersMatrix = [signers];
+
+  if (cleanupInstructions.length > 0) {
+    instructionsMatrix.push(cleanupInstructions);
+    signersMatrix.push([]);
+  }
 
   try {
     const txns = (
